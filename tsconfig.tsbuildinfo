@@ -1,1 +1,1 @@
-{"root":["./src/index.ts"],"version":"5.8.3"}
+{"root":["./src/index.ts","./src/config/cloudinary.ts","./src/config/db.ts","./src/controllers/auth.controller.ts","./src/controllers/order.controller.ts","./src/controllers/upload.controller.ts","./src/middlewares/authmiddlewares.ts","./src/models/order.ts","./src/models/user.ts","./src/routes/authroutes.ts","./src/routes/index.ts","./src/routes/orderroutes.ts","./src/routes/uploadroutes.ts"],"version":"5.8.3"}

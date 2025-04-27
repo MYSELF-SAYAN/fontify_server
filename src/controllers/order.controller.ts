@@ -1,6 +1,40 @@
 import { Request, Response } from "express";
 import Order from "../models/Order"; // Import the order model
 import User from "../models/User"; // If you need to fetch user info
+import nodemailer from "nodemailer";
+import dotenv from "dotenv";
+dotenv.config(); // Load environment variables from .env file
+const sendNotificationEmail = (userEmail: string, fontFileUrl: string) => {
+  const transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
+    service: "gmail",
+    auth: {
+      user: process.env.USER_EMAIL, // Use environment variable for email
+      pass: process.env.USER_EMAIL_PASSWORD, // Use environment variable for password
+    },
+
+    tls: {
+      rejectUnauthorized: false,
+    },
+  });
+
+  const mailOptions = {
+    from: process.env.USER_EMAIL, // Use environment variable for email
+    to: userEmail,
+    subject: "Font File Ready for Download",
+    text: `Your font file is ready. Download it here: ${fontFileUrl}`,
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.log("Error sending email: ", error);
+    } else {
+      console.log("Email sent: " + info.response);
+    }
+  });
+};
 
 export const createOrder = async (req: Request, res: Response) => {
   try {
@@ -23,7 +57,7 @@ export const getOrdersForUser = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     // console.log("User ID: ", userId); // Debugging line to check userId
-    const orders = await Order.find({userId: userId}) // Populate userId with email and name
+    const orders = await Order.find({ userId: userId }); // Populate userId with email and name
 
     res.status(200).json(orders);
   } catch (error) {
@@ -33,19 +67,15 @@ export const getOrdersForUser = async (req: Request, res: Response) => {
 };
 
 export const getAllOrdersForAdmin = async (req: Request, res: Response) => {
-    try {
- 
-      const orders = await Order.find({});  
+  try {
+    const orders = await Order.find({});
 
-      
-      res.status(200).json(orders);
-    } catch (error) {
-      console.error("Error fetching orders: ", error);
-      res.status(500).send("Error fetching orders");
-    }
-  };
-  
-
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error("Error fetching orders: ", error);
+    res.status(500).send("Error fetching orders");
+  }
+};
 
 export const updateOrderStatus = async (req: Request, res: Response) => {
   try {
@@ -61,12 +91,14 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
     );
 
     // Send email notification to the user if the status is "done"
-    //   if (updatedOrder?.status === "done") {
-    //     const user = await User.findById(updatedOrder.userId);
-    //     if (user) {
-    //       sendNotificationEmail(user.email, updatedOrder.fontFileUrl);
-    //     }
-    //   }
+      if (updatedOrder?.status === "done") {
+        const user = await User.findById(updatedOrder.userId);
+        if (user) {
+          if (user.email && updatedOrder.fontFileUrl) {
+            sendNotificationEmail(user.email, updatedOrder.fontFileUrl);
+          }
+        }
+      }
 
     res.status(200).json(updatedOrder);
   } catch (error) {
@@ -74,8 +106,6 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
     res.status(500).send("Error updating order status");
   }
 };
-
-// Adjust the import according to your project structure
 
 export const getOrderById = async (
   req: Request,
