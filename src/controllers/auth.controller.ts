@@ -70,10 +70,11 @@ export const login = async (
       process.env.JWT_SECRET as string,
       { expiresIn: "7d" }
     );
-    const role= user.role; // Get the user's role
+    const role= user.role;
+    const userId= user._id; // Get the user's role
     // Send token and user role in response
 
-    res.status(200).json({ token, role });
+    res.status(200).json({ token, role, userId });
     return;
   } catch (error) {
     console.error("Login Error:", error);
